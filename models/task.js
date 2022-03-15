@@ -55,7 +55,7 @@ function validateTask(task) {
     additionalNeed: Joi.string(),
   };
 
-  return Joi.validate(task, schema);
+  return schema.validate(task);
 }
 
 module.exports.Task = mongoose.model("Task", taskSchema);
