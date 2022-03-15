@@ -1,20 +1,17 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
-const config = require("config");
-const lodash = require("lodash");
 const { User, validateUser } = require("../models/user");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const admin = require("../middleware/admin");
 const router = express.Router();
 
-// Get all users
+// NOTE:  Get all users
 router.get("/", [auth, admin], async (req, res) => {
   const user = await User.find();
   res.send(user);
 });
 
-// Get one user by ID
+// NOTE:  Get one user by ID
 router.get("/:id", [auth, admin, validateObjectId], async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user)
@@ -23,7 +20,7 @@ router.get("/:id", [auth, admin, validateObjectId], async (req, res) => {
   res.send(user);
 });
 
-// update user route
+// NOTE:  update user route
 router.put("/:id", [auth, admin, validateObjectId], async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -47,7 +44,7 @@ router.put("/:id", [auth, admin, validateObjectId], async (req, res) => {
   res.send(user);
 });
 
-// Delete one User By ID
+// NOTE:  Delete one User By ID
 router.delete("/:id", [auth, admin, validateObjectId], async (req, res) => {
   const user = await User.findByIdAndRemove({
     _id: req.params.id,

@@ -46,6 +46,7 @@ userSchema.methods.generateAuthToken = function () {
   return token;
 };
 
+// FIXME:
 function validateUser(user) {
   const schema = {
     name: Joi.string().min(4).max(10).required(),
