@@ -8,6 +8,15 @@ const projectSchema = new Schema(
     state: { type: String },
     title: { type: String, required: true },
     description: { type: String },
+    startDate: {
+      type: Date,
+    },
+    endDate: {
+      type: Date,
+    },
+    releaseDate: {
+      type: Date,
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -30,4 +39,3 @@ function validateProject(project) {
 
 module.exports.Project = mongoose.model("Project", projectSchema);
 exports.validateProject = validateProject;
-exports.projectSchema = projectSchema;
