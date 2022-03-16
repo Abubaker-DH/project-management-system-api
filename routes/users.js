@@ -12,8 +12,17 @@ router.get("/", [auth, admin], async (req, res) => {
 });
 
 // NOTE:  Get one user by ID
-router.get("/:id", [auth, admin, validateObjectId], async (req, res) => {
-  const user = await User.findById(req.params.id);
+router.get("/:id", [auth, validateObjectId], async (req, res) => {
+  let user;
+  if (req.user.isAdmin) {
+    user = await User.findById(req.params.id);
+  } else {
+    user = await User.findById(req.params.id).select(
+      -isAdmin,
+      -roll,
+      -password
+    );
+  }
   if (!user)
     return res.status(404).send("The user with given ID was not found.");
 
@@ -21,22 +30,25 @@ router.get("/:id", [auth, admin, validateObjectId], async (req, res) => {
 });
 
 // NOTE:  update user route
-router.put("/:id", [auth, admin, validateObjectId], async (req, res) => {
+router.put("/:id", [auth, validateObjectId], async (req, res) => {
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
-
-  const user = await findByIdAndUpdate(
-    { _id: req.params.id, isAdmin: false },
-    {
-      name: req.body.name,
-      email: req.body.email,
-      imageUrl: req.body.imageUrl,
-      password: req.body.password,
-      isAdmin: req.body.isAdmin,
-      roll: req.body.roll,
-    },
-    { new: true }
-  );
+  let user;
+  // INFO:  the owner or admin can update
+  if (req.user._id === req.params.id || req.user.isAdmin) {
+    user = await findByIdAndUpdate(
+      { _id: req.params.id, isAdmin: false },
+      {
+        name: req.body.name,
+        email: req.body.email,
+        imageUrl: req.body.imageUrl,
+        password: req.body.password,
+        isAdmin: req.body.isAdmin,
+        roll: req.body.roll,
+      },
+      { new: true }
+    );
+  }
 
   if (!user)
     return res.status(404).send("The user with given ID was not found");
