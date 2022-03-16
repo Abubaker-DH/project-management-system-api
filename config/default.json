@@ -1,0 +1,6 @@
+{
+    "jwtPrivateKey": "09fb5e99bf938f3fb3b2c763bb920e66494461fb18c4e3a6e686c4bf12254045",
+    "db": "mongodb://localhost/pmsystem",
+    "logs": "logs",
+    "port": "4000"   
+  }

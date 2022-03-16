@@ -1,6 +1,6 @@
 // const winston = require("winston");
 const express = require("express");
-// const config = require("config");
+const config = require("config");
 const app = express();
 
 // require("./startup/cors")(app);
@@ -15,8 +15,7 @@ app.get("/", (req, res, next) => {
   res.send("Hello to Project Management System Api");
 });
 
-const port = process.env.PORT || 3000;
-// NOTE: config.get("port")
+const port = process.env.PORT || config.get("port");
 const server = app.listen(port, () =>
   // winston.info(`Listening on port ${port}...`)
   console.log(`Listening on port ${port}...`)
