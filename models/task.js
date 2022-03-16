@@ -16,7 +16,7 @@ const taskSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Project",
     },
-    userId: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -31,10 +31,7 @@ const taskSchema = new Schema(
       trim: true,
       maxlength: 255,
     },
-    additionalNeed: {
-      type: String,
-      maxlength: 255,
-    },
+    additionalNeed: [{ item: { type: String } }],
     startDate: {
       type: Date,
     },
@@ -49,10 +46,14 @@ function validateTask(task) {
   const schema = {
     title: Joi.string().min(3).max(50).required(),
     projectId: Joi.objectId(),
-    userId: Joi.objectId(),
+    user: Joi.objectId(),
     priority: Joi.string(),
     status: Joi.string(),
-    additionalNeed: Joi.string(),
+    startDate: Joi.date(),
+    endDate: Joi.date(),
+    additionalNeed: Joi.array()
+      .allow("")
+      .items(Joi.object({ item: Joi.string() })),
   };
 
   return schema.validate(task);

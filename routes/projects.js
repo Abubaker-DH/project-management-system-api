@@ -29,8 +29,11 @@ router.post("/", auth, async (req, res) => {
   const project = new Project({
     title: req.body.title,
     description: req.body.description,
-    state: req.body.state,
+    status: req.body.status,
     user: req.user._id,
+    startDate: req.body.startDate,
+    endDate: req.body.endDate,
+    releaseDate: req.body.releaseDate,
   });
   await project.save();
 
@@ -59,8 +62,11 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
     {
       title: req.body.title,
       description: req.body.description,
-      state: req.body.state,
+      status: req.body.status,
       user: req.user._id,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      releaseDate: req.body.releaseDate,
     },
     { new: true }
   );

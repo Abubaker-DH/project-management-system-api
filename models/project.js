@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 
 const projectSchema = new Schema(
   {
-    state: { type: String },
+    status: { type: String },
     title: { type: String, required: true },
     description: { type: String },
     startDate: {
@@ -28,7 +28,10 @@ const projectSchema = new Schema(
 
 function validateProject(project) {
   const schema = Joi.object({
-    state: Joi.string(),
+    status: Joi.string(),
+    startDate: Joi.date(),
+    endDate: Joi.date(),
+    releaseDate: Joi.date(),
     title: Joi.string().min(5).max(50).required(),
     description: Joi.string().min(5).max(50),
     user: Joi.objectId().required(),
