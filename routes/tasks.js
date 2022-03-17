@@ -28,6 +28,7 @@ router.post("/", auth, async (req, res) => {
 
   const task = new Task({
     title: req.body.title,
+    projectId: req.body.projectId,
     description: req.body.description,
     additionalNeed: req.body.additionalNeed,
     status: req.body.status,
@@ -69,6 +70,7 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
       startDate: req.body.startDate,
       endDate: req.body.endDate,
       releaseDate: req.body.releaseDate,
+      projectId: req.body.projectId,
     },
     { new: true }
   );

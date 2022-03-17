@@ -5,8 +5,10 @@ const Schema = mongoose.Schema;
 
 const projectSchema = new Schema(
   {
-    status: { type: String },
     title: { type: String, required: true },
+    status: { type: String, trim: true },
+    projectManager: { type: Schema.Types.ObjectId, ref: "User" },
+    projectTeam: [{ memper: { type: Schema.Types.ObjectId, ref: "User" } }],
     description: { type: String },
     startDate: {
       type: Date,
@@ -31,10 +33,14 @@ function validateProject(project) {
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
+    projectManager: Joi.objectId(),
     releaseDate: Joi.date(),
     title: Joi.string().min(5).max(50).required(),
     description: Joi.string().min(5).max(50),
     user: Joi.objectId().required(),
+    projectTeam: Joi.array()
+      .allow("")
+      .items(Joi.object({ item: Joi.string() })),
   });
 
   return schema.validate(project);

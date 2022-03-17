@@ -1,4 +1,5 @@
 const { Project, validateProject } = require("../models/project");
+const { Task, validateTask } = require("../models/task");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
@@ -11,8 +12,11 @@ router.get("/", auth, async (req, res) => {
   if (req.user.isAdmin) {
     projects = await Project.find().populate("user").select("-__v");
   } else {
-    // INFO: user will get their owne project
-    projects = await Project.find(req.user._id.toString() === project.user._id)
+    // INFO: user will get their owne project and project
+    projects = await Project.find(
+      req.user._id.toString() === project.user.toString() ||
+        req.user._id.toString() === project.projectManager.toString()
+    )
       .populate("user", "_id name imageUrl")
       .select("-__v");
   }
@@ -30,6 +34,8 @@ router.post("/", auth, async (req, res) => {
     title: req.body.title,
     description: req.body.description,
     status: req.body.status,
+    projectManager: req.body.projectManager,
+    projectTeam: req.body.projectTeam,
     user: req.user._id,
     startDate: req.body.startDate,
     endDate: req.body.endDate,
@@ -49,10 +55,11 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
   if (!project)
     return res.status(404).send(" The project with given ID was not found.");
 
-  // INFO: the owner or admin can update the project
+  // INFO: the owner or admin or project manager can update the project
   if (
     req.user._id.toString() !== project.user.toString() ||
-    req.user.isAdmin === "false"
+    req.user.isAdmin === "false" ||
+    req.user._id.toString() !== project.projectManager.toString()
   ) {
     return res.status(405).send("Method not allowed.");
   }
@@ -62,6 +69,8 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
     {
       title: req.body.title,
       description: req.body.description,
+      projectManager: req.body.projectManager,
+      projectTeam: req.body.projectTeam,
       status: req.body.status,
       user: req.user._id,
       startDate: req.body.startDate,
@@ -97,7 +106,11 @@ router.get("/:id", auth, validateObjectId, async (req, res) => {
   if (!project)
     return res.status(404).send(" The project with given ID was not found.");
 
-  res.send(project);
+  const tasks = await Task.find(
+    task.projectId.toString() === req.params.id.toString()
+  );
+  // INFO: return project with their all tasks
+  res.send({ project, tasks });
 });
 
 module.exports = router;

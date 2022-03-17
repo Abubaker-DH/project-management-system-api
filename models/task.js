@@ -15,11 +15,16 @@ const taskSchema = new Schema(
     projectId: {
       type: Schema.Types.ObjectId,
       ref: "Project",
+      required: true,
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    asssignee: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     priority: {
       type: String,
@@ -45,8 +50,8 @@ const taskSchema = new Schema(
 function validateTask(task) {
   const schema = {
     title: Joi.string().min(3).max(50).required(),
-    projectId: Joi.objectId(),
-    user: Joi.objectId(),
+    projectId: Joi.objectId().required(),
+    user: Joi.objectId().required(),
     priority: Joi.string(),
     status: Joi.string(),
     startDate: Joi.date(),
@@ -60,4 +65,4 @@ function validateTask(task) {
 }
 
 module.exports.Task = mongoose.model("Task", taskSchema);
-module.exports.validate = validateTask;
+module.exports.validateTask = validateTask;
