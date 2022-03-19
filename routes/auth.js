@@ -27,7 +27,7 @@ router.post("/register", async (req, res, next) => {
     .header("x-auth-token", token)
     .header("access-control-expose-headers", "x-auth-token")
     .status(201)
-    .send(lodash.pick(user, ["_id", "name", "email"]));
+    .send(lodash.pick(user, ["_id", "name", "email", "profileImage"]));
 });
 
 // INFO: Login or signIn route
@@ -47,3 +47,5 @@ router.post("/login", async (req, res, next) => {
 
   res.send(token);
 });
+
+module.exports = router;
