@@ -1,4 +1,3 @@
-const config = require("config");
 const winston = require("winston");
 require("express-async-errors");
 
