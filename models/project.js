@@ -8,7 +8,7 @@ const projectSchema = new Schema(
     title: { type: String, required: true },
     status: { type: String, trim: true },
     projectManager: { type: Schema.Types.ObjectId, ref: "User" },
-    projectTeam: [{ memper: { type: Schema.Types.ObjectId, ref: "User" } }],
+    projectTeam: [{ member: { type: Schema.Types.ObjectId, ref: "User" } }],
     description: { type: String },
     startDate: {
       type: Date,
@@ -40,7 +40,7 @@ function validateProject(project) {
     user: Joi.objectId().required(),
     projectTeam: Joi.array()
       .allow("")
-      .items(Joi.object({ item: Joi.string() })),
+      .items(Joi.object({ member: Joi.string() })),
   });
 
   return schema.validate(project);

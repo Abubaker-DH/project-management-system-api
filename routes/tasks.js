@@ -12,7 +12,7 @@ router.get("/", auth, async (req, res) => {
     tasks = await Task.find().populate("user").select("-__v");
   } else {
     // INFO: user will get their owne task
-    tasks = await Task.find(req.user._id.toString() === task.user._id)
+    tasks = await Task.find(req.user._id.toString() === task.user.toString())
       .populate("user", "_id name imageUrl")
       .select("-__v");
   }
@@ -79,17 +79,19 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
 
 // NOTE: delete one task by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
-  const task = await Task.findById(req.params.id);
+  // INFO: the owner or admin can delete task
+  if (
+    req.user._id.toString() !== task.user.toString() ||
+    req.user.isAdmin === "false"
+  ) {
+    return res.status(405).send("Method not allowed.");
+  }
+
+  const task = await Task.findByIdAndRemove(req.params.id);
   if (!task)
     return res.status(404).send(" The task with given ID was not found.");
 
-  // INFO: the owner or admin can delete task
-  if (req.user._id.toString() === task.user.toString() || req.user.isAdmin) {
-    clearImage(task.images);
-    await Task.findByIdAndRemove(req.params.id);
-    return res.send({ task: task, message: "Task deleted." });
-  }
-  return res.status(405).send("Method not allowed.");
+  return res.send({ task, message: "Task deleted." });
 });
 
 // NOTE: get one task route

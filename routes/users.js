@@ -17,11 +17,7 @@ router.get("/:id", [auth, validateObjectId], async (req, res) => {
   if (req.user.isAdmin) {
     user = await User.findById(req.params.id);
   } else {
-    user = await User.findById(req.params.id).select(
-      -isAdmin,
-      -roll,
-      -password
-    );
+    user = await User.findById(req.params.id).select("-isAdmin -password");
   }
   if (!user)
     return res.status(404).send("The user with given ID was not found.");
@@ -44,7 +40,7 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
         imageUrl: req.body.imageUrl,
         password: req.body.password,
         isAdmin: req.body.isAdmin,
-        roll: req.body.roll,
+        role: req.body.role,
       },
       { new: true }
     );
@@ -53,7 +49,7 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
   if (!user)
     return res.status(404).send("The user with given ID was not found");
 
-  res.send(user);
+  res.send({ user, message: "User updated." });
 });
 
 // NOTE:  Delete one User By ID
@@ -65,7 +61,7 @@ router.delete("/:id", [auth, admin, validateObjectId], async (req, res) => {
   if (!user)
     return res.status(404).send("The user with given ID was not found.");
 
-  res.send(user);
+  res.send({ user, message: "User deleted." });
 });
 
 module.exports = router;

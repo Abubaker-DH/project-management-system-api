@@ -1,5 +1,5 @@
 const { Project, validateProject } = require("../models/project");
-const { Task, validateTask } = require("../models/task");
+const { Task } = require("../models/task");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
@@ -84,17 +84,15 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
 
 // NOTE: delete one project by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
-  const project = await Project.findById(req.params.id);
+  // INFO: the owner or admin can delete the project
+  if (req.user._id.toString() === project.user.toString() || req.user.isAdmin) {
+    return res.status(405).send("Method not allowed.");
+  }
+  const project = await Project.findByIdAndRemove(req.params.id);
   if (!project)
     return res.status(404).send(" The project with given ID was not found.");
 
-  // INFO: the owner or admin can delete the project
-  if (req.user._id.toString() === project.user.toString() || req.user.isAdmin) {
-    clearImage(project.images);
-    await Project.findByIdAndRemove(req.params.id);
-    return res.send({ project: project, message: "Project deleted." });
-  }
-  return res.status(405).send("Method not allowed.");
+  return res.send({ project, message: "Project deleted." });
 });
 
 // NOTE: get one project route
