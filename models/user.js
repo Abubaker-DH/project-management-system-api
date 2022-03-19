@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
       minlength: 4,
       maxlength: 10,
     },
-    imageUrl: {
+    profileImage: {
       type: String,
     },
     email: {
