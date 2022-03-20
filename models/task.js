@@ -64,5 +64,23 @@ function validateTask(task) {
   return schema.validate(task);
 }
 
+function validateUpdateTask(task) {
+  const schema = Joi.object({
+    title: Joi.string().min(3).max(50),
+    // projectId: Joi.objectId(),
+    // user: Joi.objectId(),
+    priority: Joi.string(),
+    status: Joi.string(),
+    startDate: Joi.date(),
+    endDate: Joi.date(),
+    additionalNeed: Joi.array()
+      .allow("")
+      .items(Joi.object({ item: Joi.string() })),
+  });
+
+  return schema.validate(task);
+}
+
 module.exports.Task = mongoose.model("Task", taskSchema);
 module.exports.validateTask = validateTask;
+module.exports.validateUpdateTask = validateUpdateTask;

@@ -1,4 +1,5 @@
 const { Task, validateTask } = require("../models/task");
+const { Project } = require("../models/project");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
@@ -12,7 +13,7 @@ router.get("/", auth, async (req, res) => {
     tasks = await Task.find().populate("user").select("-__v");
   } else {
     // INFO: user will get their owne task
-    tasks = await Task.find(req.user._id.toString() === task.user.toString())
+    tasks = await Task.find({ user: req.user._id })
       .populate("user", "_id name profileImage")
       .select("-__v");
   }
@@ -43,7 +44,7 @@ router.post("/", auth, async (req, res) => {
 });
 
 // NOTE: update task
-router.put("/:id", [auth, validateObjectId], async (req, res) => {
+router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   const { error } = validateTask(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -51,10 +52,13 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
   if (!task)
     return res.status(404).send(" The task with given ID was not found.");
 
-  // INFO: the owner or admin can update the task
+  const project = await Project.findById(task.projectId);
+
+  // INFO: the owner, admin or project manager can update the task
   if (
-    req.user._id.toString() !== task.user.toString() ||
-    req.user.isAdmin === "false"
+    req.user._id !== task.user._id &&
+    req.user.isAdmin === "false" &&
+    req.user._id !== project.projectManager
   ) {
     return res.status(405).send("Method not allowed.");
   }
@@ -66,7 +70,7 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
       description: req.body.description,
       status: req.body.status,
       additionalNeed: req.body.additionalNeed,
-      user: req.user._id,
+      // user: req.user._id,
       startDate: req.body.startDate,
       endDate: req.body.endDate,
       releaseDate: req.body.releaseDate,
@@ -79,17 +83,22 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
 
 // NOTE: delete one task by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
-  // INFO: the owner or admin can delete task
+  let task = await Task.findById(req.params.id);
+  if (!task)
+    return res.status(404).send(" The task with given ID was not found.");
+
+  const project = await Project.findById(task.projectId);
+
+  // INFO: the owner, admin or project manager can delete task
   if (
-    req.user._id.toString() !== task.user.toString() ||
-    req.user.isAdmin === "false"
+    req.user._id.toString() !== task.user._id.toString() &&
+    req.user.isAdmin === "false" &&
+    req.user._id !== project.projectManager
   ) {
     return res.status(405).send("Method not allowed.");
   }
 
-  const task = await Task.findByIdAndRemove(req.params.id);
-  if (!task)
-    return res.status(404).send(" The task with given ID was not found.");
+  task = await Task.findByIdAndRemove(req.params.id);
 
   return res.send({ task, message: "Task deleted." });
 });

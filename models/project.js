@@ -46,5 +46,24 @@ function validateProject(project) {
   return schema.validate(project);
 }
 
+function validateUpdateProject(project) {
+  const schema = Joi.object({
+    status: Joi.string(),
+    startDate: Joi.date(),
+    endDate: Joi.date(),
+    projectManager: Joi.objectId(),
+    releaseDate: Joi.date(),
+    title: Joi.string().min(5).max(50),
+    description: Joi.string().min(5).max(50),
+    user: Joi.objectId(),
+    projectTeam: Joi.array()
+      .allow("")
+      .items(Joi.object({ member: Joi.string() })),
+  });
+
+  return schema.validate(project);
+}
+
 module.exports.Project = mongoose.model("Project", projectSchema);
 exports.validateProject = validateProject;
+exports.validateUpdateProject = validateUpdateProject;
