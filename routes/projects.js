@@ -12,12 +12,12 @@ router.get("/", auth, async (req, res) => {
   if (req.user.isAdmin) {
     projects = await Project.find().populate("user").select("-__v");
   } else {
-    // INFO: user will get their owne project and project
+    // INFO: user create project and one that he is their Project manager
     projects = await Project.find(
       req.user._id.toString() === project.user.toString() ||
         req.user._id.toString() === project.projectManager.toString()
     )
-      .populate("user", "_id name imageUrl")
+      .populate("user", "_id name profileImage")
       .select("-__v");
   }
 
@@ -99,7 +99,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
 router.get("/:id", auth, validateObjectId, async (req, res) => {
   const project = await Project.findById(req.params.id).populate(
     "user",
-    "name _id"
+    "name _id profileImage"
   );
   if (!project)
     return res.status(404).send(" The project with given ID was not found.");

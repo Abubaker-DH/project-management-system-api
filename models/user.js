@@ -1,4 +1,5 @@
 const config = require("config");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const mongoose = require("mongoose");
@@ -13,6 +14,7 @@ const userSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
+      default: "",
     },
     email: {
       type: String,
@@ -42,17 +44,17 @@ userSchema.methods.generateAuthToken = function () {
       isAdmin: this.isAdmin,
       role: this.role,
     },
-    config.get("jwtPrivateKey")
+    config.get("jwtPrivateKey") || process.env.jwtPrivateKey
   );
   return token;
 };
 
 function validateRegister(user) {
-  const schema = {
+  const schema = Joi.object({
     name: Joi.string().min(4).max(10).required(),
     email: Joi.string().min(8).max(255).required().email(),
     password: Joi.string().min(6).max(255).required(),
-  };
+  });
 
   return schema.validate(user);
 }
@@ -65,6 +67,23 @@ function validateLogin(user) {
   return schema.validate(user);
 }
 
+function validateUser(user) {
+  const schema = Joi.object({
+    profileImage: Joi.string().allow(""),
+    name: Joi.string().min(4).max(10),
+    password: Joi.string().min(6).max(255),
+    isAdmin: Joi.boolean(),
+    role: Joi.string(),
+  });
+
+  return schema.validate(user);
+}
+
+userSchema.methods.matchPassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
 module.exports.User = mongoose.model("User", userSchema);
 module.exports.validateRegister = validateRegister;
+module.exports.validateUser = validateUser;
 module.exports.validateLogin = validateLogin;

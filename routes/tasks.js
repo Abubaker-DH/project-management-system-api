@@ -13,7 +13,7 @@ router.get("/", auth, async (req, res) => {
   } else {
     // INFO: user will get their owne task
     tasks = await Task.find(req.user._id.toString() === task.user.toString())
-      .populate("user", "_id name imageUrl")
+      .populate("user", "_id name profileImage")
       .select("-__v");
   }
 
@@ -96,7 +96,10 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
 
 // NOTE: get one task route
 router.get("/:id", auth, validateObjectId, async (req, res) => {
-  const task = await Task.findById(req.params.id).populate("user", "name _id");
+  const task = await Task.findById(req.params.id).populate(
+    "user",
+    "name _id profileImage"
+  );
   if (!task)
     return res.status(404).send(" The task with given ID was not found.");
 

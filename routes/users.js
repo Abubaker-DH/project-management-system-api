@@ -28,7 +28,21 @@ router.get("/:id", [auth, validateObjectId], async (req, res) => {
 });
 
 // NOTE:  update user route
-router.put("/:id", [auth, validateObjectId], async (req, res) => {
+router.patch("/:id", [auth, validateObjectId], async (req, res) => {
+  let user = await User.findById({ _id: req.params.id });
+  if (!user)
+    return res.status(404).send("The user with given ID was not found");
+
+  // INFO:  the owner or admin can update
+  if (req.user._id !== req.params.id && !req.user.isAdmin) {
+    return res.status(403).send("method not allowed.");
+  }
+
+  // INFO: the user can not change his account to be ADMIN
+  if (req.body.isAdmin === "true" && !req.user.isAdmin) {
+    return res.status(403).send("method not allowed.");
+  }
+
   // INFO: get the profile image from req.file
   if (req.file) {
     req.body.profileImage = req.file.path;
@@ -36,26 +50,22 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
 
   const { error } = validateUser(req.body);
   if (error) return res.status(400).send(error.details[0].message);
-  let user;
 
-  // INFO:  the owner or admin can update
-  if (req.user._id === req.params.id || req.user.isAdmin) {
-    user = await findByIdAndUpdate(
-      { _id: req.params.id, isAdmin: false },
-      {
-        name: req.body.name,
-        email: req.body.email,
-        profileImage: req.body.profileImage,
-        password: req.body.password,
-        isAdmin: req.body.isAdmin,
-        role: req.body.role,
-      },
-      { new: true }
-    );
-  }
+  //  INFO: delete the old image
+  if (req.body.profileImage || req.body.profileImage === "")
+    clearImage(user.profileImage);
 
-  if (!user)
-    return res.status(404).send("The user with given ID was not found");
+  user = await User.findByIdAndUpdate(
+    { _id: req.params.id, isAdmin: false },
+    {
+      name: req.body.name,
+      profileImage: req.body.profileImage,
+      password: req.body.password,
+      isAdmin: req.body.isAdmin,
+      role: req.body.role,
+    },
+    { new: true }
+  );
 
   res.send({ user, message: "User updated." });
 });
@@ -66,7 +76,10 @@ router.delete("/:id", [auth, admin, validateObjectId], async (req, res) => {
     _id: req.params.id,
     isAdmin: false,
   });
-  clearImage(user.profileImage);
+
+  if (user.profileImage) {
+    clearImage(user.profileImage);
+  }
 
   if (!user)
     return res.status(404).send("The user with given ID was not found.");

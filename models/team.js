@@ -23,11 +23,11 @@ const teamSchema = new Schema(
 );
 
 function validateTeam(team) {
-  const schema = {
+  const schema = Joi.object({
     user: Joi.objectId().required(),
     teamMember: Joi.objectId().required(),
     role: Joi.string(),
-  };
+  });
 
   return schema.validate(team);
 }

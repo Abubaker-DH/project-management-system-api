@@ -13,7 +13,7 @@ router.get("/", auth, async (req, res) => {
   } else {
     // INFO: user will get their owne team
     teams = await Team.find(req.user._id.toString() === team.user.toString())
-      .populate("teamMember", "_id name imageUrl")
+      .populate("teamMember", "_id name profileImage")
       .select("-__v");
   }
 
@@ -85,7 +85,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
 router.get("/:id", auth, validateObjectId, async (req, res) => {
   const team = await Team.findById(req.params.id).populate(
     "teamMember",
-    "name _id imageUrl role"
+    "name _id profileImage role"
   );
   if (!team)
     return res.status(404).send(" The team with given ID was not found.");

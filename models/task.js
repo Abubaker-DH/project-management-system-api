@@ -48,7 +48,7 @@ const taskSchema = new Schema(
 );
 
 function validateTask(task) {
-  const schema = {
+  const schema = Joi.object({
     title: Joi.string().min(3).max(50).required(),
     projectId: Joi.objectId().required(),
     user: Joi.objectId().required(),
@@ -59,7 +59,7 @@ function validateTask(task) {
     additionalNeed: Joi.array()
       .allow("")
       .items(Joi.object({ item: Joi.string() })),
-  };
+  });
 
   return schema.validate(task);
 }

@@ -1,2 +1,17 @@
 {"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
 {"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
+{"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
+{"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
+{"code":"ENOENT","errno":-4058,"level":"error","message":"ENOENT: no such file or directory, open 'E:\\projects\\node apps\\pms-api\\images\\2022-03-20T07-09-07.544Z-IMG_20200805_145116_168.jpg' ENOENT: no such file or directory, open 'E:\\projects\\node apps\\pms-api\\images\\2022-03-20T07-09-07.544Z-IMG_20200805_145116_168.jpg'","path":"E:\\projects\\node apps\\pms-api\\images\\2022-03-20T07-09-07.544Z-IMG_20200805_145116_168.jpg","stack":"Error: ENOENT: no such file or directory, open 'E:\\projects\\node apps\\pms-api\\images\\2022-03-20T07-09-07.544Z-IMG_20200805_145116_168.jpg'","storageErrors":[],"syscall":"open"}
+{"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
+{"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
+{"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
+{"level":"info","message":"Listening on port 4000..."}
+{"level":"info","message":"Connected to mongodb://localhost/pmsystem..."}
