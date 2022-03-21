@@ -6,6 +6,8 @@ const {
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
+const { Team } = require("../models/team");
+const { Task } = require("../models/task");
 const router = express.Router();
 
 // NOTE: get all projects
@@ -53,12 +55,12 @@ router.post("/", auth, async (req, res) => {
 
 // NOTE: update project
 router.patch("/:id", [auth, validateObjectId], async (req, res) => {
-  const { error } = validateUpdateProject(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   let project = await Project.findById(req.params.id);
   if (!project)
     return res.status(404).send(" The project with given ID was not found.");
+
+  const { error } = validateUpdateProject(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
   // INFO: the owner or admin or project manager can update the project
   if (
@@ -68,6 +70,8 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   ) {
     return res.status(405).send("Method not allowed.");
   }
+  const member = await Team.find({ projectTeam: req.body.projectTeam });
+  if (member) return res.send({ message: "Team member alrady exist." });
 
   project = await Project.findByIdAndUpdate(
     req.params.id,
@@ -113,6 +117,15 @@ router.get("/:id", auth, validateObjectId, async (req, res) => {
   );
   if (!project)
     return res.status(404).send(" The project with given ID was not found.");
+
+  // INFO: the owner or admin or project manager can get project details
+  if (
+    req.user._id !== project.user._id &&
+    req.user.isAdmin === "false" &&
+    req.user._id !== project.projectManager
+  ) {
+    return res.status(405).send("Method not allowed.");
+  }
 
   const tasks = await Task.find({ projectId: req.params.id });
   // INFO: return project with their all tasks

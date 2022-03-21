@@ -67,8 +67,6 @@ function validateTask(task) {
 function validateUpdateTask(task) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(50),
-    // projectId: Joi.objectId(),
-    // user: Joi.objectId(),
     priority: Joi.string(),
     status: Joi.string(),
     startDate: Joi.date(),

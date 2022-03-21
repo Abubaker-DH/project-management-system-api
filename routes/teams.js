@@ -1,30 +1,34 @@
-const { Team, validateTeam } = require("../models/team");
+const { Team, validateTeam, validateUpdateTeam } = require("../models/team");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
 const router = express.Router();
 
-// NOTE: get all teams
+// NOTE: get all team members
 router.get("/", auth, async (req, res) => {
   let teams;
   // INFO: admin will get all teams
   if (req.user.isAdmin) {
     teams = await Team.find().populate("teamMember").select("-__v");
-  } else {
-    // INFO: user will get their owne team
-    teams = await Team.find(req.user._id.toString() === team.user.toString())
-      .populate("teamMember", "_id name profileImage")
-      .select("-__v");
+    return res.send(teams);
   }
+  // INFO: user will get their owne team
+  teams = await Team.find({ user: req.user._id })
+    .populate("teamMember", "_id name profileImage")
+    .select("-__v");
 
   res.send(teams);
 });
 
-// NOTE: add new team
+// NOTE: add new team member
 router.post("/", auth, async (req, res) => {
+  req.body.user = req.user._id;
   // INFO:  validate data send by user
   const { error } = validateTeam(req.body);
   if (error) return res.status(400).send(error.details[0].message);
+
+  const member = await Team.find({ teamMember: req.body.teamMember });
+  if (member) return res.send({ message: "Team member alrady exist." });
 
   const team = new Team({
     teamMember: req.body.teamMember,
@@ -33,23 +37,24 @@ router.post("/", auth, async (req, res) => {
   });
   await team.save();
 
-  res.status(201).send({ team, message: "Added new team seccessfully." });
+  res
+    .status(201)
+    .send({ team, message: "Added new team member seccessfully." });
 });
 
-// NOTE: update team
-router.put("/:id", [auth, validateObjectId], async (req, res) => {
-  const { error } = validateTeam(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
+// NOTE: update team member
+router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   let team = await Team.findById(req.params.id);
   if (!team)
-    return res.status(404).send(" The team with given ID was not found.");
+    return res
+      .status(404)
+      .send(" The team member with given ID was not found.");
+
+  const { error } = validateUpdateTeam(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
   // INFO: the owner or admin can update the team
-  if (
-    req.user._id.toString() !== team.user.toString() ||
-    req.user.isAdmin === "false"
-  ) {
+  if (req.user._id !== team.user._id && req.user.isAdmin === "false") {
     return res.status(405).send("Method not allowed.");
   }
 
@@ -57,38 +62,45 @@ router.put("/:id", [auth, validateObjectId], async (req, res) => {
     req.params.id,
     {
       role: req.body.role,
-
-      user: req.user._id,
-
-      teamMember: req.body.teamMember,
     },
     { new: true }
   );
-  res.send({ team, message: "Team updated." });
+  res.send({ team, message: "Team member updated." });
 });
 
 // NOTE: delete one team by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
+  let team = await Team.findById(req.params.id);
+  if (!team)
+    return res.status(404).send("The team member with given ID was not found.");
+
   // INFO: the owner or admin can delete team
-  if (req.user._id.toString() === team.user.toString() || req.user.isAdmin) {
+  if (
+    req.user._id.toString() !== team.user._id.toString() &&
+    req.user.isAdmin === false
+  ) {
     return res.status(405).send("Method not allowed.");
   }
 
-  const team = await Team.findByIdAndRemove(req.params.id);
+  team = await Team.findByIdAndRemove(req.params.id);
   if (!team)
-    return res.status(404).send(" The team with given ID was not found.");
+    return res
+      .status(404)
+      .send(" The team member with given ID was not found.");
 
-  return res.send({ team, message: "Team deleted." });
+  return res.send({ team, message: "Team member deleted." });
 });
 
-// NOTE: get one team route
+// NOTE: get one team member route
 router.get("/:id", auth, validateObjectId, async (req, res) => {
   const team = await Team.findById(req.params.id).populate(
     "teamMember",
     "name _id profileImage role"
   );
   if (!team)
-    return res.status(404).send(" The team with given ID was not found.");
+    return res
+      .status(404)
+      .send(" The team member with given ID was not found.");
 
   res.send(team);
 });

@@ -31,6 +31,14 @@ function validateTeam(team) {
 
   return schema.validate(team);
 }
+function validateUpdateTeam(team) {
+  const schema = Joi.object({
+    role: Joi.string(),
+  });
+
+  return schema.validate(team);
+}
 
 module.exports.Team = mongoose.model("Team", teamSchema);
 module.exports.validateTeam = validateTeam;
+module.exports.validateUpdateTeam = validateUpdateTeam;
