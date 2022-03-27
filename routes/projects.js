@@ -6,7 +6,6 @@ const {
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
-const { Team } = require("../models/team");
 const { Task } = require("../models/task");
 const router = express.Router();
 
@@ -15,7 +14,10 @@ router.get("/", auth, async (req, res) => {
   let projects;
   // INFO: admin will get all projects
   if (req.user.isAdmin) {
-    projects = await Project.find().populate("user", "-isAdmin").select("-__v");
+    projects = await Project.find()
+      .populate("user", "-isAdmin")
+      .populate("projectTeam.member", "-isAdmin")
+      .select("-__v");
     return res.send(projects);
   }
 
@@ -24,6 +26,7 @@ router.get("/", auth, async (req, res) => {
     { user: req.user._id } || { projectManager: req.user._id }
   )
     .populate("user", "_id name profileImage")
+    .populate("projectTeam.member", "_id name profileImage")
     .select("-__v")
     .exec();
 
@@ -42,7 +45,7 @@ router.post("/", auth, async (req, res) => {
     description: req.body.description,
     status: req.body.status,
     projectManager: req.body.projectManager,
-    projectTeam: req.body.projectTeam,
+    projectTeam: [{ member: req.body.member }],
     user: req.user._id,
     startDate: req.body.startDate,
     endDate: req.body.endDate,
@@ -70,8 +73,25 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   ) {
     return res.status(405).send("Method not allowed.");
   }
-  const member = await Team.find({ projectTeam: req.body.projectTeam });
-  if (member) return res.send({ message: "Team member alrady exist." });
+
+  const newMember = [...project.projectTeam];
+
+  // INFO: find the member index
+  const memberIndex = project.projectTeam.findIndex((cp) => {
+    return cp.member.toString() === req.body.member.toString();
+  });
+
+  // INFO: 0=> member exist -1 => not exist
+  if (memberIndex >= 0) {
+    // INFO: remove if the member alrady exist
+    newMember = project.projectTeam.filter(
+      (item) => item.member !== req.body.member
+    );
+    // return res.send({ message: "Team member alrady exist." });
+  } else {
+    // INFO: add new member to project team
+    newMember.push({ member: req.body.member });
+  }
 
   project = await Project.findByIdAndUpdate(
     req.params.id,
@@ -79,7 +99,7 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
       title: req.body.title,
       description: req.body.description,
       projectManager: req.body.projectManager,
-      projectTeam: req.body.projectTeam,
+      projectTeam: newMember,
       status: req.body.status,
       startDate: req.body.startDate,
       endDate: req.body.endDate,

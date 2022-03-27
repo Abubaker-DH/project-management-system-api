@@ -36,7 +36,9 @@ const taskSchema = new Schema(
       trim: true,
       maxlength: 255,
     },
-    additionalNeed: [{ item: { type: String } }],
+    additionalNeed: [
+      { adNeed: { type: Schema.Types.ObjectId, ref: "AditionalNeed" } },
+    ],
     startDate: {
       type: Date,
     },
@@ -51,14 +53,12 @@ function validateTask(task) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(50).required(),
     projectId: Joi.objectId().required(),
-    user: Joi.objectId().required(),
+    projectId: Joi.objectId().required(),
+    adNeed: Joi.objectId(),
     priority: Joi.string(),
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
-    additionalNeed: Joi.array()
-      .allow("")
-      .items(Joi.object({ item: Joi.string() })),
   });
 
   return schema.validate(task);
@@ -71,9 +71,7 @@ function validateUpdateTask(task) {
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
-    additionalNeed: Joi.array()
-      .allow("")
-      .items(Joi.object({ item: Joi.string() })),
+    adNeed: Joi.string(),
   });
 
   return schema.validate(task);
