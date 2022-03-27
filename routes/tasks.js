@@ -31,6 +31,7 @@ router.post("/", auth, async (req, res) => {
   const task = new Task({
     title: req.body.title,
     projectId: req.body.projectId,
+    assignee: req.body.assignee,
     description: req.body.description,
     priority: req.body.priority,
     additionalNeed: [{ adNeed: req.body.adNeed }],
@@ -70,6 +71,7 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
     {
       title: req.body.title,
       description: req.body.description,
+      asssignee: req.body.asssignee,
       status: req.body.status,
       priority: req.body.priority,
       additionalNeed: [{ adNeed: req.body.adNeed }],

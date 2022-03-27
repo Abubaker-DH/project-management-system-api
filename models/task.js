@@ -22,7 +22,7 @@ const taskSchema = new Schema(
       ref: "User",
       required: true,
     },
-    asssignee: {
+    assignee: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
@@ -53,7 +53,7 @@ function validateTask(task) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(50).required(),
     projectId: Joi.objectId().required(),
-    projectId: Joi.objectId().required(),
+    assignee: Joi.objectId(),
     adNeed: Joi.objectId(),
     priority: Joi.string(),
     status: Joi.string(),
@@ -68,6 +68,7 @@ function validateUpdateTask(task) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(50),
     priority: Joi.string(),
+    assignee: Joi.ObjectId(),
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
