@@ -54,7 +54,10 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   // INFO: the owner or admin can update the team
-  if (req.user._id !== team.user._id && req.user.isAdmin === "false") {
+  if (
+    req.user._id.toString() !== team.user._id.toString() &&
+    req.user.isAdmin === "false"
+  ) {
     return res.status(405).send("Method not allowed.");
   }
 
@@ -83,10 +86,6 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   }
 
   team = await Team.findByIdAndRemove(req.params.id);
-  if (!team)
-    return res
-      .status(404)
-      .send(" The team member with given ID was not found.");
 
   return res.send({ team, message: "Team member deleted." });
 });

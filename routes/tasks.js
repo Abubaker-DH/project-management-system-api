@@ -59,9 +59,9 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
 
   // INFO: the owner, admin or project manager can update the task
   if (
-    req.user._id !== task.user._id &&
+    req.user._id.toString() !== task.user._id.toString() &&
     req.user.isAdmin === "false" &&
-    req.user._id !== project.projectManager
+    req.user._id.toString() !== project.projectManager.toString()
   ) {
     return res.status(405).send("Method not allowed.");
   }

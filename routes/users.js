@@ -34,12 +34,15 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
     return res.status(404).send("The user with given ID was not found");
 
   // INFO:  the owner or admin can update
-  if (req.user._id !== req.params.id && !req.user.isAdmin) {
+  if (
+    req.user._id.toString() !== req.params.id.toString() &&
+    !req.user.isAdmin
+  ) {
     return res.status(403).send("method not allowed.");
   }
 
   // INFO: the user can not change his account to be ADMIN
-  if (req.body.isAdmin === "true" && !req.user.isAdmin) {
+  if (req.body.isAdmin === "true" || !req.user.isAdmin) {
     return res.status(403).send("method not allowed.");
   }
 

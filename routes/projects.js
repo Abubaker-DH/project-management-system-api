@@ -67,9 +67,9 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
 
   // INFO: the owner or admin or project manager can update the project
   if (
-    req.user._id !== project.user._id &&
+    req.user._id.toString() !== project.user._id.toString() &&
     req.user.isAdmin === "false" &&
-    req.user._id !== project.projectManager
+    req.user._id.toString() !== project.projectManager.toString()
   ) {
     return res.status(405).send("Method not allowed.");
   }
@@ -140,9 +140,9 @@ router.get("/:id", auth, validateObjectId, async (req, res) => {
 
   // INFO: the owner or admin or project manager can get project details
   if (
-    req.user._id !== project.user._id &&
+    req.user._id.toString() !== project.user._id.toString() &&
     req.user.isAdmin === "false" &&
-    req.user._id !== project.projectManager
+    req.user._id.toString() !== project.projectManager.toString()
   ) {
     return res.status(405).send("Method not allowed.");
   }
