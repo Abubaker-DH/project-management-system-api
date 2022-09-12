@@ -1,5 +1,4 @@
 const { Task, validateTask, validateUpdateTask } = require("../models/task");
-const { Project } = require("../models/project");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
@@ -9,16 +8,17 @@ const router = express.Router();
 router.get("/", auth, async (req, res) => {
   let tasks;
   // INFO: admin will get all tasks
-  if (req.user.isAdmin) {
+  if (req.user.role === "admin") {
     tasks = await Task.find().populate("user").select("-__v");
+    res.send(tasks);
   } else {
-    // INFO: user will get their owne task
+    // INFO: User will get their Owne task
     tasks = await Task.find({ user: req.user._id })
       .populate("user", "_id name profileImage")
       .select("-__v");
-  }
 
-  res.send(tasks);
+    res.send(tasks);
+  }
 });
 
 // NOTE: add new task
@@ -48,23 +48,19 @@ router.post("/", auth, async (req, res) => {
 
 // NOTE: update task
 router.patch("/:id", [auth, validateObjectId], async (req, res) => {
-  const { error } = validateUpdateTask(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  // INFO: the owner, admin can update the task
+  if (
+    req.user._id.toString() != task.user._id.toString() ||
+    req.user.isAdmin === "admin"
+  )
+    return res.status(405).send("Method not allowed.");
 
   let task = await Task.findById(req.params.id);
   if (!task)
     return res.status(404).send(" The task with given ID was not found.");
 
-  const project = await Project.findById(task.projectId);
-
-  // INFO: the owner, admin or project manager can update the task
-  if (
-    req.user._id != task.user._id ||
-    req.user.isAdmin === "false" ||
-    req.user._id != project.projectManager
-  ) {
-    return res.status(405).send("Method not allowed.");
-  }
+  const { error } = validateUpdateTask(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
   task = await Task.findByIdAndUpdate(
     req.params.id,
@@ -87,45 +83,35 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
 
 // NOTE: delete one task by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
-  let task = await Task.findById(req.params.id);
+  // INFO: the owner, admin can delete task
+  if (
+    req.user._id.toString() !== task.user._id.toString() ||
+    req.user.role === "admin"
+  )
+    return res.status(405).send("Method not allowed.");
+
+  const task = await Task.findByIdAndRemove(req.params.id);
   if (!task)
     return res.status(404).send(" The task with given ID was not found.");
-
-  const project = await Project.findById(task.projectId);
-
-  // INFO: the owner, admin or project manager can delete task
-  if (
-    req.user._id !== task.user._id ||
-    req.user.isAdmin === "false" ||
-    req.user._id !== project.projectManager
-  ) {
-    return res.status(405).send("Method not allowed.");
-  }
-
-  task = await Task.findByIdAndRemove(req.params.id);
 
   return res.send({ task, message: "Task deleted." });
 });
 
 // NOTE: get one task route
 router.get("/:id", auth, validateObjectId, async (req, res) => {
-  const task = await Task.findById(req.params.id).populate(
-    "user",
-    "name _id profileImage"
-  );
-  if (!task)
-    return res.status(404).send(" The task with given ID was not found.");
-
-  const project = await Project.findById(task.projectId);
-
   // INFO: the owner, admin or project manager can get task details
   if (
-    req.user._id !== task.user._id ||
-    req.user.isAdmin === "false" ||
-    req.user._id !== project.projectManager
-  ) {
+    req.user._id.toString() !== task.user._id.toString() ||
+    req.user.role === "admin"
+  )
     return res.status(405).send("Method not allowed.");
-  }
+
+  const task = await Task.findById(req.params.id).populate(
+    "user",
+    "name profileImage"
+  );
+  if (!task)
+    return res.status(404).send("The task with given ID was not found.");
 
   res.send(task);
 });
