@@ -59,9 +59,9 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
 
   // INFO: the owner, admin or project manager can update the task
   if (
-    req.user._id.toString() !== task.user._id.toString() &&
-    req.user.isAdmin === "false" &&
-    req.user._id.toString() !== project.projectManager.toString()
+    req.user._id != task.user._id ||
+    req.user.isAdmin === "false" ||
+    req.user._id != project.projectManager
   ) {
     return res.status(405).send("Method not allowed.");
   }
@@ -95,8 +95,8 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
 
   // INFO: the owner, admin or project manager can delete task
   if (
-    req.user._id.toString() !== task.user._id.toString() &&
-    req.user.isAdmin === "false" &&
+    req.user._id !== task.user._id ||
+    req.user.isAdmin === "false" ||
     req.user._id !== project.projectManager
   ) {
     return res.status(405).send("Method not allowed.");
@@ -120,8 +120,8 @@ router.get("/:id", auth, validateObjectId, async (req, res) => {
 
   // INFO: the owner, admin or project manager can get task details
   if (
-    req.user._id.toString() !== task.user._id.toString() &&
-    req.user.isAdmin === "false" &&
+    req.user._id !== task.user._id ||
+    req.user.isAdmin === "false" ||
     req.user._id !== project.projectManager
   ) {
     return res.status(405).send("Method not allowed.");

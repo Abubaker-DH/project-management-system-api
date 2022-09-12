@@ -38,7 +38,7 @@ function validateProject(project) {
     title: Joi.string().min(5).max(50).required(),
     description: Joi.string().min(5).max(50),
     user: Joi.objectId().required(),
-    member: Joi.string(),
+    member: Joi.objectId,
   });
 
   return schema.validate(project);
@@ -54,7 +54,7 @@ function validateUpdateProject(project) {
     title: Joi.string().min(5).max(50),
     description: Joi.string().min(5).max(50),
     user: Joi.objectId(),
-    member: Joi.string(),
+    member: Joi.objectId,
   });
 
   return schema.validate(project);

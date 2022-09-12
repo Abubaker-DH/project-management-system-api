@@ -67,18 +67,18 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
 
   // INFO: the owner or admin or project manager can update the project
   if (
-    req.user._id.toString() !== project.user._id.toString() &&
-    req.user.isAdmin === "false" &&
-    req.user._id.toString() !== project.projectManager.toString()
+    req.user._id !== project.user._id ||
+    req.user.isAdmin === "false" ||
+    req.user._id !== project.projectManager
   ) {
     return res.status(405).send("Method not allowed.");
   }
 
-  const newMember = [...project.projectTeam];
+  let newMember = [...project.projectTeam];
 
   // INFO: find the member index
   const memberIndex = project.projectTeam.findIndex((cp) => {
-    return cp.member.toString() === req.body.member.toString();
+    return cp.member === req.body.member;
   });
 
   // INFO: 0=> member exist -1 => not exist
@@ -118,7 +118,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
 
   // INFO: the owner or admin can delete the project
   if (
-    req.user._id.toString() !== project.user._id.toString() &&
+    req.user._id.toString() !== project.user._id.toString() ||
     req.user.isAdmin === "false"
   ) {
     return res.status(405).send("Method not allowed.");
@@ -140,8 +140,8 @@ router.get("/:id", auth, validateObjectId, async (req, res) => {
 
   // INFO: the owner or admin or project manager can get project details
   if (
-    req.user._id.toString() !== project.user._id.toString() &&
-    req.user.isAdmin === "false" &&
+    req.user._id.toString() !== project.user._id.toString() ||
+    req.user.isAdmin === "false" ||
     req.user._id.toString() !== project.projectManager.toString()
   ) {
     return res.status(405).send("Method not allowed.");

@@ -1,4 +1,3 @@
-const config = require("config");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
@@ -29,8 +28,11 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       maxlength: 1024,
     },
-    isAdmin: { type: Boolean, default: false },
-    roll: { type: String },
+    roll: {
+      type: String,
+      enum: ["user", "admin", "super-admin"],
+      default: "user",
+    },
   },
   { timestamps: true }
 );
@@ -41,10 +43,10 @@ userSchema.methods.generateAuthToken = function () {
       _id: this._id,
       name: this.name,
       email: this.email,
-      isAdmin: this.isAdmin,
       role: this.role,
     },
-    config.get("jwtPrivateKey") || process.env.jwtPrivateKey
+    process.env.JWT_PRIVATE_KEY,
+    { expiresIn: process.env.JWT_EXPIRE }
   );
   return token;
 };
@@ -72,7 +74,6 @@ function validateUser(user) {
     profileImage: Joi.string().allow(""),
     name: Joi.string().min(4).max(10),
     password: Joi.string().min(6).max(255),
-    isAdmin: Joi.boolean(),
     role: Joi.string(),
   });
 

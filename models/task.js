@@ -54,6 +54,7 @@ function validateTask(task) {
     title: Joi.string().min(3).max(50).required(),
     projectId: Joi.objectId().required(),
     assignee: Joi.objectId(),
+    user: Joi.objectId(),
     adNeed: Joi.objectId(),
     priority: Joi.string(),
     status: Joi.string(),
@@ -68,7 +69,8 @@ function validateUpdateTask(task) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(50),
     priority: Joi.string(),
-    assignee: Joi.ObjectId(),
+    assignee: Joi.objectId(),
+    user: Joi.objectId(),
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
