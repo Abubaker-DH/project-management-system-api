@@ -12,7 +12,7 @@ module.exports = function (app) {
   app.use("/api/v1/users", users);
   app.use("/api/v1/projects", projects);
   app.use("/api/v1/tasks", tasks);
-  app.use("/api/v1/additionalNeeds", additionalNeeds);
+  app.use("/api/v1/additional-needs", additionalNeeds);
   app.use("/api/v1/teams", teams);
   app.use("/api/v1/auth", auth);
   app.use(error);

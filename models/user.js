@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const Joi = require("joi");
+const { additionalNeedSchema } = require("./additionalNeed");
 const { projectSchema } = require("./project");
 const { teamSchema } = require("./team");
 const { taskSchema } = require("./task");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const Joi = require("joi");
 
 const userSchema = new mongoose.Schema(
   {
@@ -44,6 +45,7 @@ userSchema.pre("remove", function (next) {
   projectSchema.remove({ user: this._id }).exec();
   taskSchema.remove({ user: this._id }).exec();
   teamSchema.remove({ user: this._id }).exec();
+  additionalNeedSchema.remove({ user: this._id }).exec();
   next();
 });
 

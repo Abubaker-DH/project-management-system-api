@@ -1,5 +1,6 @@
-const Joi = require("joi");
 const mongoose = require("mongoose");
+const { additionalNeedSchema } = require("./additionalNeed");
+const Joi = require("joi");
 
 const Schema = mongoose.Schema;
 
@@ -37,7 +38,7 @@ const taskSchema = new Schema(
       maxlength: 255,
     },
     additionalNeed: [
-      { adNeed: { type: Schema.Types.ObjectId, ref: "AditionalNeed" } },
+      { adNeed: { type: Schema.Types.ObjectId, ref: "AdditionalNeed" } },
     ],
     startDate: {
       type: Date,
@@ -49,13 +50,18 @@ const taskSchema = new Schema(
   { timestamps: true }
 );
 
+taskSchema.pre("remove", function (next) {
+  additionalNeedSchema.remove({ taskId: this._id }).exec();
+  next();
+});
+
 function validateTask(task) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(50).required(),
     projectId: Joi.objectId().required(),
     assignee: Joi.objectId(),
     user: Joi.objectId(),
-    adNeed: Joi.objectId(),
+    additionalNeed: Joi.array().items(Joi.object({ adNeed: Joi.string() })),
     priority: Joi.string(),
     status: Joi.string(),
     startDate: Joi.date(),
@@ -74,13 +80,13 @@ function validateUpdateTask(task) {
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
-    adNeed: Joi.string(),
+    additionalNeed: Joi.array().items(Joi.object({ adNeed: Joi.string() })),
   });
 
   return schema.validate(task);
 }
 
 module.exports.Task = mongoose.model("Task", taskSchema);
+module.exports.validateUpdateTask = validateUpdateTask;
 module.exports.validateTask = validateTask;
 module.exports.taskSchema = taskSchema;
-module.exports.validateUpdateTask = validateUpdateTask;

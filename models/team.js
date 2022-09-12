@@ -1,5 +1,5 @@
-const Joi = require("joi");
 const mongoose = require("mongoose");
+const Joi = require("joi");
 
 const Schema = mongoose.Schema;
 
@@ -28,6 +28,6 @@ function validateTeam(team) {
 }
 
 module.exports.Team = mongoose.model("Team", teamSchema);
+module.exports.validateUpdateTeam = validateUpdateTeam;
 module.exports.validateTeam = validateTeam;
 module.exports.teamSchema = teamSchema;
-module.exports.validateUpdateTeam = validateUpdateTeam;

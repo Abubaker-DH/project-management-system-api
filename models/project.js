@@ -1,5 +1,6 @@
-const Joi = require("joi");
 const mongoose = require("mongoose");
+const { taskSchema } = require("./task");
+const Joi = require("joi");
 
 const Schema = mongoose.Schema;
 
@@ -33,6 +34,11 @@ const projectSchema = new Schema(
   { timestamps: true }
 );
 
+projectSchema.pre("remove", function (next) {
+  taskSchema.remove({ projectId: this._id }).exec();
+  next();
+});
+
 function validateProject(project) {
   const schema = Joi.object({
     status: Joi.string(),
@@ -64,6 +70,6 @@ function validateUpdateProject(project) {
 }
 
 module.exports.Project = mongoose.model("Project", projectSchema);
+exports.validateUpdateProject = validateUpdateProject;
 exports.validateProject = validateProject;
 module.exports.projectSchema = projectSchema;
-exports.validateUpdateProject = validateUpdateProject;

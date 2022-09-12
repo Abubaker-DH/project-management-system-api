@@ -4,7 +4,7 @@ const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
 const router = express.Router();
 
-// NOTE: get all team members
+// NOTE: Get all team members
 router.get("/", auth, async (req, res) => {
   let teams;
   // INFO: admin will get all teams
@@ -16,7 +16,7 @@ router.get("/", auth, async (req, res) => {
     return res.send(teams);
   }
 
-  // INFO: user will get their owne team
+  // INFO: User will get their Owne team
   teams = await Team.find({ user: req.user._id })
     .populate("teamMembers.member", "_id email name profileImage")
     .select("-__v");
@@ -31,9 +31,6 @@ router.post("/", auth, async (req, res) => {
   const { error } = validateTeam(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  const member = await Team.find({ teamMember: req.body.teamMember });
-  if (member) return res.send({ message: "Team member alrady exist." });
-
   const team = new Team({
     teamMembers: req.body.teamMembers,
     title: req.body.title,
@@ -46,13 +43,11 @@ router.post("/", auth, async (req, res) => {
     .send({ team, message: "Added new team member seccessfully." });
 });
 
-// NOTE: update team member
+// NOTE: Update team member
 router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   let team = await Team.findById(req.params.id);
   if (!team)
-    return res
-      .status(404)
-      .send(" The team member with given ID was not found.");
+    return res.status(404).send(" The team with given ID was not found.");
 
   const { error } = validateTeam(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -76,13 +71,11 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
   res.send({ team, message: "Team member updated." });
 });
 
-// NOTE: delete one team by id
+// NOTE: Delete one team by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   const team = await Team.findById(req.params.id);
   if (!team)
-    return res
-      .status(404)
-      .send(" The team member with given ID was not found.");
+    return res.status(404).send(" The team with given ID was not found.");
 
   // INFO: the Owner or Admin Can get team details
   if (
@@ -100,9 +93,7 @@ router.delete("/:id", [auth, validateObjectId], async (req, res) => {
 router.get("/:id", auth, validateObjectId, async (req, res) => {
   const team = await Team.findById(req.params.id);
   if (!team)
-    return res
-      .status(404)
-      .send(" The team member with given ID was not found.");
+    return res.status(404).send(" The team with given ID was not found.");
 
   // INFO: the Owner or Admin Can get team details
   if (

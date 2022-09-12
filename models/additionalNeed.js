@@ -1,5 +1,5 @@
-const Joi = require("joi");
 const mongoose = require("mongoose");
+const Joi = require("joi");
 
 const Schema = mongoose.Schema;
 
@@ -39,4 +39,5 @@ module.exports.AdditionalNeed = mongoose.model(
   "AdditionalNeed",
   additionalNeedSchema
 );
+module.exports.additionalNeedSchema = additionalNeedSchema;
 module.exports.validateAdditionalNeed = validateAdditionalNeed;
