@@ -5,18 +5,15 @@ const Schema = mongoose.Schema;
 
 const teamSchema = new Schema(
   {
-    teamMember: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+    title: {
+      type: String,
       required: true,
     },
+    teamMembers: [{ member: { type: Schema.Types.ObjectId, ref: "User" } }],
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    role: {
-      type: String,
     },
   },
   { timestamps: true }
@@ -24,16 +21,7 @@ const teamSchema = new Schema(
 
 function validateTeam(team) {
   const schema = Joi.object({
-    user: Joi.objectId().required(),
-    teamMember: Joi.objectId().required(),
-    role: Joi.string(),
-  });
-
-  return schema.validate(team);
-}
-function validateUpdateTeam(team) {
-  const schema = Joi.object({
-    role: Joi.string(),
+    title: Joi.string().required(),
   });
 
   return schema.validate(team);
@@ -41,4 +29,5 @@ function validateUpdateTeam(team) {
 
 module.exports.Team = mongoose.model("Team", teamSchema);
 module.exports.validateTeam = validateTeam;
+module.exports.teamSchema = teamSchema;
 module.exports.validateUpdateTeam = validateUpdateTeam;

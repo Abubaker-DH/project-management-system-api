@@ -24,6 +24,11 @@ const projectSchema = new Schema(
       ref: "User",
       required: true,
     },
+    projectTasks: [
+      {
+        task: { type: Schema.Types.ObjectId, ref: "Task" },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -37,8 +42,7 @@ function validateProject(project) {
     releaseDate: Joi.date(),
     title: Joi.string().min(5).max(50).required(),
     description: Joi.string().min(5).max(50),
-    user: Joi.objectId().required(),
-    member: Joi.objectId,
+    projectTeam: Joi.array().items(Joi.object({ member: Joi.string() })),
   });
 
   return schema.validate(project);
@@ -53,8 +57,7 @@ function validateUpdateProject(project) {
     releaseDate: Joi.date(),
     title: Joi.string().min(5).max(50),
     description: Joi.string().min(5).max(50),
-    user: Joi.objectId(),
-    member: Joi.objectId,
+    projectTeam: Joi.array().items(Joi.object({ member: Joi.string() })),
   });
 
   return schema.validate(project);
@@ -62,4 +65,5 @@ function validateUpdateProject(project) {
 
 module.exports.Project = mongoose.model("Project", projectSchema);
 exports.validateProject = validateProject;
+module.exports.projectSchema = projectSchema;
 exports.validateUpdateProject = validateUpdateProject;

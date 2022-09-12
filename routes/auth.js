@@ -24,8 +24,8 @@ router.post("/register", async (req, res, next) => {
   const token = user.generateAuthToken();
 
   res
-    .header("x-auth-token", token)
-    .header("access-control-expose-headers", "x-auth-token")
+    .setHeader("Access-Control-Allow-Headers", "Content-type, Authorization")
+    .header("authorization", "bearer " + token)
     .status(201)
     .send(lodash.pick(user, ["_id", "name", "email", "profileImage"]));
 });

@@ -82,4 +82,5 @@ function validateUpdateTask(task) {
 
 module.exports.Task = mongoose.model("Task", taskSchema);
 module.exports.validateTask = validateTask;
+module.exports.taskSchema = taskSchema;
 module.exports.validateUpdateTask = validateUpdateTask;

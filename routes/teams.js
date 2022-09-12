@@ -1,4 +1,4 @@
-const { Team, validateTeam, validateUpdateTeam } = require("../models/team");
+const { Team, validateTeam } = require("../models/team");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
 const express = require("express");
@@ -8,13 +8,17 @@ const router = express.Router();
 router.get("/", auth, async (req, res) => {
   let teams;
   // INFO: admin will get all teams
-  if (req.user.isAdmin) {
-    teams = await Team.find().populate("teamMember").select("-__v");
+  if (req.user.role === "admin") {
+    teams = await Team.find()
+      .populate("user", "_id name email profileImage")
+      .populate("teamMembers.member")
+      .select("-__v");
     return res.send(teams);
   }
+
   // INFO: user will get their owne team
   teams = await Team.find({ user: req.user._id })
-    .populate("teamMember", "_id name profileImage")
+    .populate("teamMembers.member", "_id email name profileImage")
     .select("-__v");
 
   res.send(teams);
@@ -31,8 +35,8 @@ router.post("/", auth, async (req, res) => {
   if (member) return res.send({ message: "Team member alrady exist." });
 
   const team = new Team({
-    teamMember: req.body.teamMember,
-    role: req.body.role,
+    teamMembers: req.body.teamMembers,
+    title: req.body.title,
     user: req.user._id,
   });
   await team.save();
@@ -50,21 +54,22 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
       .status(404)
       .send(" The team member with given ID was not found.");
 
-  const { error } = validateUpdateTeam(req.body);
+  const { error } = validateTeam(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  // INFO: the owner or admin can update the team
-  if (
-    req.user._id.toString() !== team.user._id.toString() &&
-    req.user.isAdmin === "false"
-  ) {
-    return res.status(405).send("Method not allowed.");
-  }
+  // INFO: remove duplicate members
+  let membersArray = [];
+  req.body.teamMembers.forEach((element) => {
+    if (!membersArray.includes(element)) {
+      membersArray.push(element);
+    }
+  });
 
   team = await Team.findByIdAndUpdate(
     req.params.id,
     {
-      role: req.body.role,
+      title: req.body.title,
+      teamMembers: membersArray,
     },
     { new: true }
   );
@@ -73,33 +78,42 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
 
 // NOTE: delete one team by id
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
-  let team = await Team.findById(req.params.id);
-  if (!team)
-    return res.status(404).send("The team member with given ID was not found.");
-
-  // INFO: the owner or admin can delete team
-  if (
-    req.user._id.toString() !== team.user._id.toString() &&
-    req.user.isAdmin === false
-  ) {
-    return res.status(405).send("Method not allowed.");
-  }
-
-  team = await Team.findByIdAndRemove(req.params.id);
-
-  return res.send({ team, message: "Team member deleted." });
-});
-
-// NOTE: get one team member route
-router.get("/:id", auth, validateObjectId, async (req, res) => {
-  const team = await Team.findById(req.params.id).populate(
-    "teamMember",
-    "name _id profileImage role"
-  );
+  const team = await Team.findById(req.params.id);
   if (!team)
     return res
       .status(404)
       .send(" The team member with given ID was not found.");
+
+  // INFO: the Owner or Admin Can get team details
+  if (
+    req.user._id.toString() !== team.user._id.toString() ||
+    req.user.role !== "admin"
+  )
+    return res.status(405).send("Method not allowed.");
+
+  await Team.findByIdAndRemove(req.params.id);
+
+  return res.send({ team, message: "Team member deleted." });
+});
+
+// NOTE: Get one team with members route
+router.get("/:id", auth, validateObjectId, async (req, res) => {
+  const team = await Team.findById(req.params.id);
+  if (!team)
+    return res
+      .status(404)
+      .send(" The team member with given ID was not found.");
+
+  // INFO: the Owner or Admin Can get team details
+  if (
+    req.user._id.toString() !== team.user._id.toString() ||
+    req.user.role !== "admin"
+  )
+    return res.status(405).send("Method not allowed.");
+
+  await Team.findById(req.params.id)
+    .populate("user", "name profileImage email")
+    .populate("teamMembers.member", "name profileImage email job");
 
   res.send(team);
 });

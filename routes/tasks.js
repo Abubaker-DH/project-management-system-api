@@ -1,7 +1,9 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const { Project } = require("../models/project");
 const { Task, validateTask, validateUpdateTask } = require("../models/task");
 const auth = require("../middleware/auth");
 const validateObjectId = require("../middleware/validateObjectId");
-const express = require("express");
 const router = express.Router();
 
 // NOTE: get all tasks
@@ -28,6 +30,11 @@ router.post("/", auth, async (req, res) => {
   const { error } = validateTask(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const project = await Project.findById(req.params.projectId);
+
   const task = new Task({
     title: req.body.title,
     projectId: req.body.projectId,
@@ -41,9 +48,19 @@ router.post("/", auth, async (req, res) => {
     endDate: req.body.endDate,
     releaseDate: req.body.releaseDate,
   });
-  await task.save();
 
-  res.status(201).send({ task, message: "Added new task seccessfully." });
+  try {
+    project.projectTasks.push({ task: task._id });
+    await task.save(session);
+    await project.save(session);
+
+    res.status(201).send({ task, message: "Added new task seccessfully." });
+  } catch (error) {
+    console.log("Error occur While create new Order", error);
+    await session.abortTransaction();
+  } finally {
+    await session.endSession();
+  }
 });
 
 // NOTE: update task
