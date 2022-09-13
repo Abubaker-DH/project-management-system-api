@@ -28,6 +28,5 @@ function validateTeam(team) {
 }
 
 module.exports.Team = mongoose.model("Team", teamSchema);
-module.exports.validateUpdateTeam = validateUpdateTeam;
 module.exports.validateTeam = validateTeam;
 module.exports.teamSchema = teamSchema;

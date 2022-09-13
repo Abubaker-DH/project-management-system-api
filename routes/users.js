@@ -2,9 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const { User, validateUser } = require("../models/user");
-const auth = require("../middleware/auth");
-const { upload } = require("../middleware/upload");
 const validateObjectId = require("../middleware/validateObjectId");
+const { upload } = require("../middleware/upload");
+const auth = require("../middleware/auth");
 const router = express.Router();
 
 // NOTE:  Get all users
@@ -79,7 +79,7 @@ router.patch(
 // NOTE:  Delete one User By ID
 router.delete("/:id", [auth, validateObjectId], async (req, res) => {
   // INFO: The super admin is allowed to delete a user
-  if (req.user.role !== "super") {
+  if (req.user.role !== "super-admin") {
     return res.status(403).send("Method not allowed.");
   }
 

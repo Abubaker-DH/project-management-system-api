@@ -1,8 +1,8 @@
-const helmet = require("helmet");
-const cors = require("cors");
-const xss = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 const compression = require("compression");
+const xss = require("xss-clean");
+const helmet = require("helmet");
+const cors = require("cors");
 
 module.exports = function (app) {
   // INFO: if we behind a proxy
