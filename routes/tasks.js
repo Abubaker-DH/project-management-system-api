@@ -91,7 +91,6 @@ router.patch("/:id", [auth, validateObjectId], async (req, res) => {
       startDate: req.body.startDate,
       endDate: req.body.endDate,
       releaseDate: req.body.releaseDate,
-      projectId: req.body.projectId,
     },
     { new: true }
   );

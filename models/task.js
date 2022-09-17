@@ -76,7 +76,6 @@ function validateUpdateTask(task) {
     title: Joi.string().min(3).max(50),
     priority: Joi.string(),
     assignee: Joi.objectId(),
-    user: Joi.objectId(),
     status: Joi.string(),
     startDate: Joi.date(),
     endDate: Joi.date(),
